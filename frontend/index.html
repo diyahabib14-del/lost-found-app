@@ -16,67 +16,24 @@
             background: white;
             padding: 25px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        h1, h2 {
-            text-align: center;
-        }
-
-        input, select {
+        input, select, button {
             width: 100%;
             padding: 12px;
             margin: 8px 0;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            transform: scale(1.03);
         }
 
         .item {
             background: #f9f9ff;
             margin-top: 15px;
             padding: 15px;
-            border-radius: 10px;
-            border-left: 6px solid #667eea;
+            border-left: 5px solid blue;
         }
-
-        .lost { border-left-color: red; }
-        .found { border-left-color: green; }
-
-        .tag {
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            color: white;
-            margin-left: 8px;
-        }
-
-        .lost-tag { background: red; }
-        .found-tag { background: green; }
 
         img {
             width: 100%;
             margin-top: 10px;
-            border-radius: 8px;
         }
     </style>
 </head>
@@ -85,11 +42,10 @@
 
 <div class="container">
 
-    <h1>🔍 Lost & Found System</h1>
+    <h1>Lost & Found</h1>
 
     <form id="itemForm">
-
-        <input type="text" id="title" placeholder="Item Title" required>
+        <input type="text" id="title" placeholder="Title" required>
         <input type="text" id="description" placeholder="Description" required>
 
         <select id="type">
@@ -97,34 +53,46 @@
             <option value="FOUND">Found</option>
         </select>
 
-        <input type="text" id="contact" placeholder="Contact Number" required>
-
-        <!-- NEW IMAGE FIELD -->
+        <input type="text" id="contact" placeholder="Contact" required>
         <input type="file" id="image">
 
-        <button type="submit">➕ Add Item</button>
-
+        <button type="submit">Add Item</button>
     </form>
 
-    <h2>📦 Items</h2>
     <div id="itemsList"></div>
 
 </div>
 
 <script>
-
 const API = "https://lost-found-app-14xy.onrender.com";
 
 // ADD ITEM
 document.getElementById("itemForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const file = document.getElementById("image").files[0];
+    let imageUrl = "";
+
+    if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", "unsigned_upload");
+
+        const res = await fetch("https://api.cloudinary.com/v1_1/dqw3uggee/image/upload", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await res.json();
+        imageUrl = data.secure_url;
+    }
+
     const item = {
-        title: title.value,
-        description: description.value,
-        type: type.value,
-        contact: contact.value,
-        image: image.value
+        title: document.getElementById("title").value,
+        description: document.getElementById("description").value,
+        type: document.getElementById("type").value,
+        contact: document.getElementById("contact").value,
+        image: imageUrl
     };
 
     await fetch(API + "/items", {
@@ -133,46 +101,47 @@ document.getElementById("itemForm").addEventListener("submit", async (e) => {
         body: JSON.stringify(item)
     });
 
-    alert("Item Added 🚀");
-
+    alert("Item Added");
     e.target.reset();
     loadItems();
 });
-
 
 // LOAD ITEMS
 async function loadItems() {
     const res = await fetch(API + "/items");
     const data = await res.json();
 
+    const itemsList = document.getElementById("itemsList");
     itemsList.innerHTML = "";
 
     data.forEach(item => {
         const div = document.createElement("div");
 
-        div.className = "item " + (item.type === "LOST" ? "lost" : "found");
+        div.className = "item";
 
         div.innerHTML = `
-            <strong>${item.title}</strong>
-            <span class="tag ${item.type === "LOST" ? "lost-tag" : "found-tag"}">
-                ${item.type}
-            </span>
-
+            <b>${item.title}</b> (${item.type})
             ${item.image ? `<img src="${item.image}">` : ""}
-
             <p>${item.description}</p>
-            <small>📞 ${item.contact}</small>
-             <button onclick="deleteItem('${item._id}')" style="margin-top:10px;background:red;">
-        Delete
-    </button>
+            <small>${item.contact}</small>
+            <br>
+            <button onclick="deleteItem('${item._id}')">Delete</button>
         `;
 
         itemsList.appendChild(div);
     });
 }
 
-loadItems();
+// DELETE ITEM
+window.deleteItem = async function(id) {
+    await fetch(API + "/delete/" + id, {
+        method: "DELETE"
+    });
 
+    loadItems();
+};
+
+loadItems();
 </script>
 
 </body>
