@@ -1,147 +1,222 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Lost & Found</title>
+<title>AI Lost & Found</title>
 
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-        }
+<style>
+body {
+    font-family: 'Segoe UI';
+    margin: 0;
+    background: linear-gradient(135deg,#667eea,#764ba2);
+    color: white;
+}
 
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-        }
+.container {
+    max-width: 900px;
+    margin: 30px auto;
+    background: rgba(255,255,255,0.1);
+    padding: 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
 
-        input, select, button {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-        }
+h1 {
+    text-align: center;
+    text-shadow: 0 0 10px #00f;
+}
 
-        .item {
-            background: #f9f9ff;
-            margin-top: 15px;
-            padding: 15px;
-            border-left: 5px solid blue;
-        }
+input, select, button {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: none;
+}
 
-        img {
-            width: 100%;
-            margin-top: 10px;
-        }
-    </style>
+button {
+    background: #00c6ff;
+    color: white;
+    cursor: pointer;
+}
+
+.item {
+    background: rgba(255,255,255,0.2);
+    padding: 15px;
+    margin-top: 15px;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.item:hover {
+    transform: translateY(-5px);
+}
+
+img {
+    width: 100%;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+.dark {
+    background: #121212;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+}
+
+</style>
 </head>
 
 <body>
 
 <div class="container">
 
-    <h1>Lost & Found</h1>
+<h1>🤖 AI Lost & Found</h1>
 
-    <form id="itemForm">
-        <input type="text" id="title" placeholder="Title" required>
-        <input type="text" id="description" placeholder="Description" required>
+<p style="text-align:center;">Smart assistant for tracking lost items</p>
 
-        <select id="type">
-            <option value="LOST">Lost</option>
-            <option value="FOUND">Found</option>
-        </select>
+<button onclick="toggleDark()">🌙 Toggle Dark Mode</button>
 
-        <input type="text" id="contact" placeholder="Contact" required>
-        <input type="file" id="image">
+<input id="search" placeholder="🔍 Search..." onkeyup="loadItems()">
 
-        <button type="submit">Add Item</button>
-    </form>
+<div class="stats">
+    <span id="lostCount"></span>
+    <span id="foundCount"></span>
+</div>
 
-    <div id="itemsList"></div>
+<form id="itemForm">
+
+<input id="title" placeholder="Title" required>
+<input id="description" placeholder="Description" required>
+
+<select id="type">
+<option value="LOST">Lost</option>
+<option value="FOUND">Found</option>
+</select>
+
+<input id="contact" placeholder="Contact" required>
+<input type="file" id="image">
+
+<button type="submit">➕ Add Item</button>
+
+</form>
+
+<div id="itemsList"></div>
 
 </div>
 
 <script>
+
 const API = "https://lost-found-app-14xy.onrender.com";
 
+// DARK MODE
+function toggleDark(){
+    document.body.classList.toggle("dark");
+}
+
 // ADD ITEM
-document.getElementById("itemForm").addEventListener("submit", async (e) => {
+document.getElementById("itemForm").addEventListener("submit", async(e)=>{
     e.preventDefault();
 
-    const file = document.getElementById("image").files[0];
-    let imageUrl = "";
-
-    if (file) {
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", "unsigned_upload");
-
-        const res = await fetch("https://api.cloudinary.com/v1_1/dqw3uggee/image/upload", {
-            method: "POST",
-            body: formData
-        });
-
-        const data = await res.json();
-        imageUrl = data.secure_url;
+    // AI classification
+    if(description.value.toLowerCase().includes("phone")){
+        type.value="LOST";
     }
 
-    const item = {
-        title: document.getElementById("title").value,
-        description: document.getElementById("description").value,
-        type: document.getElementById("type").value,
-        contact: document.getElementById("contact").value,
-        image: imageUrl
+    const file=image.files[0];
+    let imageUrl="";
+
+    if(file){
+        const fd=new FormData();
+        fd.append("file",file);
+        fd.append("upload_preset","unsigned_upload");
+
+        const res=await fetch("https://api.cloudinary.com/v1_1/dqw3uggee/image/upload",{
+            method:"POST",
+            body:fd
+        });
+
+        const data=await res.json();
+        imageUrl=data.secure_url;
+    }
+
+    const item={
+        title:title.value,
+        description:description.value,
+        type:type.value,
+        contact:contact.value,
+        image:imageUrl
     };
 
-    await fetch(API + "/items", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(item)
+    await fetch(API+"/items",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(item)
     });
 
-    alert("Item Added");
+    showToast("Item Added 🚀");
+
     e.target.reset();
     loadItems();
 });
 
 // LOAD ITEMS
-async function loadItems() {
-    const res = await fetch(API + "/items");
-    const data = await res.json();
+async function loadItems(){
+    const res=await fetch(API+"/items");
+    const data=await res.json();
 
-    const itemsList = document.getElementById("itemsList");
-    itemsList.innerHTML = "";
+    const searchVal=search.value.toLowerCase();
 
-    data.forEach(item => {
-        const div = document.createElement("div");
+    let lost=0,found=0;
 
-        div.className = "item";
+    itemsList.innerHTML="";
 
-        div.innerHTML = `
-            <b>${item.title}</b> (${item.type})
-            ${item.image ? `<img src="${item.image}">` : ""}
-            <p>${item.description}</p>
-            <small>${item.contact}</small>
-            <br>
-            <button onclick="deleteItem('${item._id}')">Delete</button>
+    data.forEach(item=>{
+
+        if(!item.title.toLowerCase().includes(searchVal)) return;
+
+        if(item.type==="LOST") lost++;
+        else found++;
+
+        const div=document.createElement("div");
+
+        div.className="item";
+
+        div.innerHTML=`
+        <b>${item.title}</b> (${item.type})
+        ${item.image?`<img src="${item.image}">`:""}
+        <p>${item.description}</p>
+        <small>${item.contact}</small>
+        <button onclick="deleteItem('${item._id}')">Delete</button>
         `;
 
         itemsList.appendChild(div);
     });
+
+    lostCount.innerText="Lost: "+lost;
+    foundCount.innerText="Found: "+found;
 }
 
-// DELETE ITEM
-window.deleteItem = async function(id) {
-    await fetch(API + "/delete/" + id, {
-        method: "DELETE"
-    });
-
+// DELETE
+window.deleteItem=async function(id){
+    await fetch(API+"/delete/"+id,{method:"DELETE"});
     loadItems();
-};
+}
+
+// TOAST
+function showToast(msg){
+    const t=document.createElement("div");
+    t.innerText=msg;
+    t.style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:black;color:white;padding:10px;border-radius:5px;";
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(),2000);
+}
 
 loadItems();
+
 </script>
 
 </body>
