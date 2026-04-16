@@ -2,77 +2,188 @@
 <html>
 <head>
     <title>Lost & Found</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeIn 0.8s ease;
+        }
+
+        h1 {
+            text-align: center;
+            color: #444;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            transition: 0.3s;
+        }
+
+        input:focus, select:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 5px rgba(102,126,234,0.5);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.03);
+        }
+
+        .item {
+            background: #f9f9ff;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 6px solid #667eea;
+            transition: 0.3s;
+        }
+
+        .item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .lost {
+            border-left-color: red;
+        }
+
+        .found {
+            border-left-color: green;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translateY(20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        .tag {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: white;
+            margin-left: 5px;
+        }
+
+        .lost-tag {
+            background: red;
+        }
+
+        .found-tag {
+            background: green;
+        }
+    </style>
 </head>
+
 <body>
 
-<h2>Add Item</h2>
+<div class="container">
+    <h1>🔍 Lost & Found System</h1>
 
-<input id="title" placeholder="Title"><br>
-<input id="desc" placeholder="Description"><br>
+    <form id="itemForm">
+        <div class="form-group">
+            <input type="text" id="title" placeholder="Item Title" required>
+        </div>
 
-<select id="type">
-    <option>LOST</option>
-    <option>FOUND</option>
-</select><br>
+        <div class="form-group">
+            <input type="text" id="description" placeholder="Description" required>
+        </div>
 
-<input id="contact" placeholder="Contact"><br>
+        <div class="form-group">
+            <select id="type">
+                <option value="LOST">Lost</option>
+                <option value="FOUND">Found</option>
+            </select>
+        </div>
 
-<button onclick="addItem()">Submit</button>
+        <div class="form-group">
+            <input type="text" id="contact" placeholder="Contact Number" required>
+        </div>
 
-<h2>Items</h2>
-<div id="list"></div>
+        <button type="submit">➕ Add Item</button>
+    </form>
 
-<script src="script.js"></script>
+    <h2>📦 Items</h2>
+    <div id="itemsList"></div>
+</div>
+
+<script>
+const API = "https://lost-found-app-14xy.onrender.com";
+
+document.getElementById("itemForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const item = {
+        title: title.value,
+        description: description.value,
+        type: type.value,
+        contact: contact.value
+    };
+
+    await fetch(API + "/items", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(item)
+    });
+
+    alert("Item Added 🚀");
+    loadItems();
+});
+
+async function loadItems() {
+    const res = await fetch(API + "/items");
+    const data = await res.json();
+
+    itemsList.innerHTML = "";
+
+    data.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item " + (item.type === "LOST" ? "lost" : "found");
+
+        div.innerHTML = `
+            <strong>${item.title}</strong>
+            <span class="tag ${item.type === "LOST" ? "lost-tag" : "found-tag"}">
+                ${item.type}
+            </span>
+            <p>${item.description}</p>
+            <small>📞 ${item.contact}</small>
+        `;
+
+        itemsList.appendChild(div);
+    });
+}
+
+loadItems();
+</script>
+
 </body>
 </html>
-<style>
-body {
-    font-family: Arial, sans-serif;
-    background: #f4f7fb;
-    margin: 0;
-    padding: 20px;
-}
-
-.container {
-    max-width: 600px;
-    margin: auto;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-h2 {
-    text-align: center;
-}
-
-input, select {
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-button {
-    width: 100%;
-    padding: 10px;
-    background: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #45a049;
-}
-
-.item {
-    background: #fff;
-    margin-top: 15px;
-    padding: 10px;
-    border-left: 5px solid #4CAF50;
-    border-radius: 5px;
-}
-</style>
