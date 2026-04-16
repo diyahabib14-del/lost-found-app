@@ -23,7 +23,8 @@ const ItemSchema = new mongoose.Schema({
     title: String,
     description: String,
     type: String, // LOST or FOUND
-    contact: String
+    contact: String,
+    image: String 
 });
 
 const Item = mongoose.model("Item", ItemSchema);
