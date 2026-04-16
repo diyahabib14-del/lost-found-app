@@ -1,4 +1,4 @@
-const API = "http://localhost:5000";
+const API = "https://lost-found-app-14xy.onrender.com";
 
 async function addItem() {
     const data = {
