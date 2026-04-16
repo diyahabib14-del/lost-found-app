@@ -1,42 +1,41 @@
 const API = "https://lost-found-app-14xy.onrender.com";
 
-async function addItem() {
-    const data = {
-        title: document.getElementById("title").value,
-        description: document.getElementById("desc").value,
-        type: document.getElementById("type").value,
-        contact: document.getElementById("contact").value
+document.getElementById("itemForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const file = document.getElementById("image").files[0];
+
+    let imageUrl = "";
+
+    if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", "unsigned_upload");
+
+        const res = await fetch("https://api.cloudinary.com/v1_1/dqw3uggee/image/upload", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await res.json();
+        imageUrl = data.secure_url;
+    }
+
+    const item = {
+        title: title.value,
+        description: description.value,
+        type: type.value,
+        contact: contact.value,
+        image: String
     };
 
-    await fetch(API + "/add", {
+    await fetch(API + "/items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+        body: JSON.stringify(item)
     });
 
-    alert("Item Added");
-
-    loadItems(); // refresh list
-}
-
-async function loadItems() {
-    const res = await fetch(API + "/items");
-    const items = await res.json();
-
-    const list = document.getElementById("list");
-    list.innerHTML = "";
-
-    items.forEach(i => {
-        list.innerHTML += `
-            <div>
-                <b>${i.title}</b> (${i.type})<br>
-                ${i.description}<br>
-                Contact: ${i.contact}
-                <hr>
-            </div>
-        `;
-    });
-}
-
-// Load items when page opens
-window.onload = loadItems;
+    alert("Item Added 🚀");
+    e.target.reset();
+    loadItems();
+});
