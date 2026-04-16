@@ -74,7 +74,7 @@ img {
 
 <div class="container">
 
-<h1>🤖 AI Lost & Found</h1>
+<h1>  Lost & Found</h1>
 
 <p style="text-align:center;">Smart assistant for tracking lost items</p>
 
@@ -168,7 +168,8 @@ async function loadItems(){
     const res=await fetch(API+"/items");
     const data=await res.json();
 
-    const searchVal=search.value.toLowerCase();
+    const searchInput = document.getElementById("search");
+const searchVal = searchInput ? searchInput.value.toLowerCase() : "";
 
     let lost=0,found=0;
 
@@ -176,7 +177,7 @@ async function loadItems(){
 
     data.forEach(item=>{
 
-        if(!item.title.toLowerCase().includes(searchVal)) return;
+       if(searchVal && !item.title.toLowerCase().includes(searchVal)) return;
 
         if(item.type==="LOST") lost++;
         else found++;
