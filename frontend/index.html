@@ -11,6 +11,24 @@ body {
     color: white;
 }
 
+/* LOGIN PAGE */
+#loginPage {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    background:#1e1e3f;
+}
+
+.login-box {
+    background:#2a2a5a;
+    padding:30px;
+    border-radius:10px;
+    width:300px;
+    text-align:center;
+}
+
+/* MAIN APP */
 .container {
     max-width: 800px;
     margin: 30px auto;
@@ -43,7 +61,22 @@ img {
 
 <body>
 
+<!-- 🔐 LOGIN PAGE -->
+<div id="loginPage">
+    <div class="login-box">
+        <h2>🔐 Login</h2>
+        <input id="username" placeholder="Username">
+        <input id="password" type="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+</div>
+
+<!-- 🚀 MAIN APP -->
+<div id="mainApp" style="display:none;">
+
 <div class="container">
+
+<button onclick="logout()" style="background:red;">Logout</button>
 
 <h1>Lost & Found</h1>
 
@@ -65,10 +98,30 @@ img {
 <div id="itemsList"></div>
 
 </div>
+</div>
 
 <script>
 
 const API = "https://lost-found-app-14xy.onrender.com";
+
+/* 🔐 LOGIN */
+function login(){
+    const u = document.getElementById("username").value;
+    const p = document.getElementById("password").value;
+
+    if(u && p){
+        document.getElementById("loginPage").style.display="none";
+        document.getElementById("mainApp").style.display="block";
+    } else {
+        alert("Enter username & password");
+    }
+}
+
+/* 🔐 LOGOUT */
+function logout(){
+    document.getElementById("loginPage").style.display="flex";
+    document.getElementById("mainApp").style.display="none";
+}
 
 // ADD ITEM
 document.getElementById("itemForm").addEventListener("submit", async(e)=>{
@@ -80,7 +133,7 @@ document.getElementById("itemForm").addEventListener("submit", async(e)=>{
     if(file){
         const fd = new FormData();
         fd.append("file", file);
-        fd.append("upload_preset", "unsigned_upload");
+        fd.append("upload_preset", "vwc2caen"); // ✅ your correct preset
 
         const res = await fetch("https://api.cloudinary.com/v1_1/dqw3uggee/image/upload",{
             method:"POST",
@@ -92,10 +145,10 @@ document.getElementById("itemForm").addEventListener("submit", async(e)=>{
     }
 
     const item = {
-        title: title.value,
-        description: description.value,
-        type: type.value,
-        contact: contact.value,
+        title: document.getElementById("title").value,
+        description: document.getElementById("description").value,
+        type: document.getElementById("type").value,
+        contact: document.getElementById("contact").value,
         image: imageUrl
     };
 
